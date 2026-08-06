@@ -15,7 +15,9 @@ on:
   workflow_dispatch:
 
 env:
-  VERSION: ${{ github.ref_name }}
+  # On tag push ref_name is like `v1.3.2-rtl.1` (leading `v` stripped by bash).
+  # On manual dispatch ref_name is a branch name (not semver), so use a build number.
+  VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('0.0.{0}', github.run_number) }}
 
 jobs:
   linux:
@@ -27,6 +29,9 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+
+      - name: Normalize version
+        run: echo "VERSION=${VERSION#v}" >> "$GITHUB_ENV"
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
@@ -65,6 +70,9 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+
+      - name: Normalize version
+        run: echo "VERSION=${VERSION#v}" >> "$GITHUB_ENV"
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
