@@ -99,13 +99,19 @@ jobs:
       # The native app is built with native Xcode tooling. This must NOT run
       # in a Nix environment (Nix breaks xcodebuild). No signing cert, so we
       # disable code signing; the resulting .app is ad-hoc.
+      #
+      # The DockTilePlugin target is set to SWIFT_VERSION=6.0, which fails
+      # strict-concurrency checking on the public macos-15 runner (Xcode 16.4)
+      # at DockTilePlugin.swift:73. Override to Swift 5 mode to match the rest
+      # of the app and avoid the diagnostic.
       - name: Build Ghostty.app
         run: |
           cd macos
           xcodebuild -target Ghostty -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY=""
+            CODE_SIGN_IDENTITY="" \
+            SWIFT_VERSION=5.0
 
       - name: Update Info.plist
         run: |
